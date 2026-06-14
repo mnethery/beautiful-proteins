@@ -70,8 +70,9 @@ uv run python app.py
 
 Once the web app is successfully running, open **http://127.0.0.1:5001** in your browser and and you'll see the web interface in action. I'm showing some beautiful sub-nucleosome particles here (6ESF):
 
+<div style="text-align: center;" align="center">
 <img src="./img/interface.png" width=700px />
-
+</div>
 
 
 ## Usage
