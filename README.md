@@ -1,7 +1,7 @@
 # Beautiful Proteins
 #### A fully local web front end
 
-<div style="text-align: center; background-color: #000000" align="center">
+<div style="text-align: center; background-color: #000000; width=100%;" align="center">
     <img src="./img/illustrate_32e70d103a72.svg" height="300px"></img>
 </div>
 <br/>
