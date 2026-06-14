@@ -1,5 +1,5 @@
 # Beautiful Proteins
-#### A fully local web front end
+#### A fully local web front end for protein visualization
 
 <div style="text-align: center; background-color: #000000; width=100%;" align="center">
     <img src="./img/illustrate_background_stretch.svg" height="250px"></img>
