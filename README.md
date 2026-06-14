@@ -2,7 +2,7 @@
 #### A fully local web front end
 
 <div style="text-align: center; background-color: #000000; width=100%;" align="center">
-    <img src="./img/illustrate_32e70d103a72.svg" height="300px"></img>
+    <img src="./img/illustrate_background.svg" height="250px"></img>
 </div>
 <br/>
 A local web interface for <a href="https://github.com/ccsb-scripps/Illustrate">Illustrate</a>, David S. Goodsell's biomolecular illustration tool. Renders proteins in Goodsell's signature non-photorealistic style: space-filling atoms with contour outlines, soft shadows, and depth fog. 
