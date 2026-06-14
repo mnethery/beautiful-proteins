@@ -1,0 +1,339 @@
+/* ==========================================================================
+   Illustrate Web — Main Stylesheet
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Design tokens — dark theme palette used throughout via CSS custom properties
+   --------------------------------------------------------------------------- */
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --accent: #e94560;
+  --text: #eee;
+  --dim: #999;
+  --border: #333;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Sidebar — collapsible control panel on the left
+   ========================================================================== */
+
+.sidebar {
+  width: 370px;
+  min-width: 370px;
+  background: var(--surface);
+  overflow-y: auto;
+  padding: 16px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar h1 {
+  font-size: 20px;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+/* Section headers — clickable to collapse/expand via toggleSection() */
+.sidebar h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--dim);
+  margin-top: 10px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 5px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Chevron indicator — rotates when section is collapsed */
+.sidebar h2::before {
+  content: '\25BE';
+  font-size: 10px;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+.sidebar h2.collapsed::before {
+  transform: rotate(-90deg);
+}
+
+/* Collapsible section body — toggled between flex and display:none */
+.section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+.section-body.hidden {
+  display: none;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Main area — 3D viewer + rendered image split pane
+   ========================================================================== */
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #111;
+}
+
+/* Top pane: interactive 3Dmol.js viewer */
+.viewer-pane {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  display: flex;
+}
+#mol-viewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Bottom pane: Illustrate rendered image (slides open on render) */
+.render-pane {
+  position: relative;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s;
+  border-top: 2px solid var(--accent);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.render-pane.open {
+  height: 50%;
+}
+#render-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* ---------------------------------------------------------------------------
+   Overlays — render toggle button, loading spinner, rotation HUD
+   --------------------------------------------------------------------------- */
+
+#render-toggle {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 20;
+}
+
+#loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, .85);
+  padding: 16px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: none;
+  z-index: 30;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--dim);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Rotation angle HUD overlay (top-left of viewer) */
+#rot-info {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, .7);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--dim);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* 3D axis legend canvas (bottom-left of viewer) */
+#axis-canvas {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Controls bar between viewer and render panes */
+.controls-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+/* ==========================================================================
+   Form elements — fields, inputs, buttons
+   ========================================================================== */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.field label {
+  font-size: 11px;
+  color: var(--dim);
+}
+.field input[type=number] {
+  width: 68px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 12px;
+}
+.field input[type=text] {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.field input[type=color] {
+  width: 36px;
+  height: 26px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.field select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font-size: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons
+   --------------------------------------------------------------------------- */
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background .2s;
+}
+button:hover { background: #c73650; }
+button:disabled { background: #555; cursor: not-allowed; }
+button.secondary { background: var(--surface2); }
+button.secondary:hover { background: #1a4a8a; }
+button.sm { padding: 4px 10px; font-size: 11px; border-radius: 4px; }
+
+/* ==========================================================================
+   Chain list — per-chain color pickers and visibility checkboxes
+   ========================================================================== */
+
+.chain-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.chain-row input[type=color] {
+  width: 32px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  padding: 1px;
+}
+.chain-row input[type=checkbox] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+#chain-list {
+  padding: 4px 0;
+}
+
+/* ==========================================================================
+   Rendering tab bar — World / Outlines / Shadows sub-panels
+   ========================================================================== */
+
+.tab-bar {
+  display: flex;
+  gap: 2px;
+}
+.tab-bar button {
+  border-radius: 6px 6px 0 0;
+  font-size: 11px;
+  padding: 5px 10px;
+}
+.tab-bar button.active {
+  background: var(--surface2);
+}
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}

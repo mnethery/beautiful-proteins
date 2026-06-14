@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beautiful Proteins</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+<script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+</head>
+<body>
+
+<!-- sidebar area -->
+<div class="sidebar">
+  <h1>Beautiful Proteins</h1>
+  <p class="hint">Biomolecular illustration | Front End by Matt Nethery</p>
+
+  <h2 onclick="toggleSection(this)">Load Structure</h2>
+  <div class="section-body">
+    <div class="row">
+      <div class="field" style="flex:1">
+        <label>PDB ID</label>
+        <input type="text" id="pdb-id" placeholder="e.g. 2HHB" maxlength="4">
+      </div>
+      <button id="fetch-btn" onclick="fetchPDB()">Fetch</button>
+    </div>
+    <div class="row" style="align-items:center">
+      <span class="hint">or</span>
+      <input type="file" id="pdb-file" accept=".pdb,.ent,.pdb1" style="font-size:12px;color:var(--dim)">
+      <button class="secondary" onclick="uploadFile()">Upload</button>
+    </div>
+  </div>
+
+  <h2 onclick="toggleSection(this)">Transform</h2>
+  <div class="section-body">
+    <p class="hint">Drag the 3D viewer to rotate, then click "Render" to produce the illustration at that orientation.</p>
+    <div id="transform-section" onkeydown="if(event.key==='Enter'){event.preventDefault();applyTransform();}">
+      <div class="row">
+        <div class="field"><label>X rot</label><input type="number" id="xrot" value="0" step="5"></div>
+        <div class="field"><label>Y rot</label><input type="number" id="yrot" value="0" step="5"></div>
+        <div class="field"><label>Z rot</label><input type="number" id="zrot" value="90" step="5"></div>
+        <button class="sm secondary" onclick="applyTransform()">Apply</button>
+      </div>
+      <div class="row">
+        <div class="field"><label>Scale (px/&Aring;)</label><input type="number" id="scale" value="12" min="1" max="100" step="0.5"></div>
+        <div class="field"><label>Trans X</label><input type="number" id="tx" value="0" step="1"></div>
+        <div class="field"><label>Y</label><input type="number" id="ty" value="0" step="1"></div>
+        <div class="field"><label>Z</label><input type="number" id="tz" value="0" step="1"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2 onclick="toggleSection(this)">Style</h2>
+  <div class="section-body">
+    <div class="row">
+      <div class="field" style="flex:1">
+        <select id="style-select" onchange="changeStyle()">
+          <option value="entity_chain" selected>Entity Chain</option>
+          <option value="protein_dna">Protein/DNA</option>
+          <option value="cpk">CPK (by element)</option>
+          <option value="one_color">One Color</option>
+        </select>
+      </div>
+      <div class="field" id="one-color-field" style="display:none">
+        <label>Color</label>
+        <input type="color" id="one-color-picker" value="#a6a6f2" onchange="changeStyle()">
+      </div>
+    </div>
+  </div>
+
+  <h2 onclick="toggleSection(this)">Chains &amp; Colors</h2>
+  <div class="section-body">
+    <div id="chain-list"><span class="hint">Load a structure first</span></div>
+  </div>
+
+  <h2 onclick="toggleSection(this)">Rendering</h2>
+  <div class="section-body">
+    <div class="tab-bar">
+      <button class="active" onclick="switchTab(event,'tab-world')">World</button>
+      <button onclick="switchTab(event,'tab-outline')">Outlines</button>
+      <button onclick="switchTab(event,'tab-shadow')">Shadows</button>
+    </div>
+
+    <div id="tab-world" class="tab-content active">
+      <div class="row" style="margin-top:6px">
+        <div class="field"><label>Background</label><input type="color" id="bg-color" value="#000000"></div>
+        <div class="field"><label>Fog color</label><input type="color" id="fog-color" value="#000000"></div>
+        <div class="field"><label>Fog front</label><input type="number" id="fog-front" value="1.0" min="0" max="1" step="0.05"></div>
+        <div class="field"><label>Fog back</label><input type="number" id="fog-back" value="0.7" min="0" max="1" step="0.05"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Image padding</label><input type="number" id="img-size" value="-30" step="10"></div>
+      </div>
+    </div>
+
+    <div id="tab-outline" class="tab-content">
+      <div class="row" style="margin-top:6px">
+        <div class="field"><label>Contour low</label><input type="number" id="l-low" value="3.0" step="0.5"></div>
+        <div class="field"><label>Contour high</label><input type="number" id="l-high" value="10.0" step="0.5"></div>
+        <div class="field"><label>Kernel (1-4)</label><input type="number" id="kernel" value="4" min="1" max="4"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Z-diff min (&Aring;)</label><input type="number" id="l-diff-min" value="0.0" step="0.5"></div>
+        <div class="field"><label>Z-diff max (&Aring;)</label><input type="number" id="l-diff-max" value="5.0" step="0.5"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Subunit low</label><input type="number" id="r-low" value="3.0" step="0.5"></div>
+        <div class="field"><label>Subunit high</label><input type="number" id="r-high" value="10.0" step="0.5"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Residue low</label><input type="number" id="g-low" value="3.0" step="0.5"></div>
+        <div class="field"><label>Residue high</label><input type="number" id="g-high" value="8.0" step="0.5"></div>
+        <div class="field"><label>Res diff</label><input type="number" id="resdiff" value="6000" step="100"></div>
+      </div>
+    </div>
+
+    <div id="tab-shadow" class="tab-content">
+      <div class="row" style="margin-top:6px">
+        <div class="field"><label>Shadows</label><select id="shadow-on"><option value="1">On</option><option value="0">Off</option></select></div>
+        <div class="field"><label>Strength</label><input type="number" id="shadow-strength" value="0.0023" step="0.0005" min="0"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Cone angle</label><input type="number" id="shadow-cone" value="2.0" step="0.1"></div>
+        <div class="field"><label>Z-diff</label><input type="number" id="shadow-zdiff" value="1.0" step="0.1"></div>
+        <div class="field"><label>Max shadow</label><input type="number" id="shadow-max" value="0.2" step="0.05" min="0" max="1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+    <button id="render-btn" onclick="doRender(false)" disabled>Render Full</button>
+    <button class="secondary" id="preview-btn" onclick="doRender(true)" disabled>Quick Preview</button>
+  </div>
+  <h2 onclick="toggleSection(this)">Export</h2>
+  <div class="section-body">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="secondary" onclick="exportAs('png')">Save PNG</button>
+      <button class="secondary" onclick="exportAs('pnm')">Save PNM</button>
+      <button class="secondary" onclick="exportAs('svg')">Save SVG</button>
+    </div>
+    <p class="hint">PNM = lossless raster. SVG = vector traced (for Illustrator/Inkscape).</p>
+  </div>
+  <div id="status" class="hint" style="min-height:18px;margin-top:3px"></div>
+</div>
+
+<!-- main area -->
+<div class="main">
+  <div class="viewer-pane">
+    <div id="mol-viewer"></div>
+    <div id="rot-info">Drag to rotate &bull; Scroll to zoom &bull; Load a structure to begin</div>
+    <canvas id="axis-canvas" width="90" height="90"></canvas>
+    <div id="loading"><span class="spinner"></span>Rendering...</div>
+  </div>
+  <div class="render-pane" id="render-pane">
+    <img id="render-img" draggable="false">
+  </div>
+  <div class="controls-bar">
+    <span>3D preview &uarr; | Illustrate render &darr;</span>
+    <button class="sm secondary" id="render-toggle" onclick="toggleRenderPane()">Show Render</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/state.js') }}"></script>
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/viewer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/transform.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chains.js') }}"></script>
+<script src="{{ url_for('static', filename='js/render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
